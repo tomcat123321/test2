@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>帖子列表</h2>
+<p>帖子标题：<input type="text" id="title"> <input type="button" value="搜索" id="btn"></p>
+<table>
+    <tr>
+        <td>标题</td>
+        <td>内容摘要</td>
+        <td>作者</td>
+        <td>发布时间</td>
+    </tr>
+    <tbody id="myTable">
+
+    </tbody>
+</table>
+<div>
+    <p id="showPage"></p>
+    <p id="pageIndex"></p>
+</div>
+<script src="jquery_min.js"></script>
+<script>
+    $(function () {
+        function showList(page, title) {
+            $.ajax({
+                url: "index",
+                type: "get",
+                data: {"page": page, "title": title},
+                dataType: "json",
+                success: function (result) {
+                    var html = "";
+                    var pageShow = "";
+                    for (var i = 0; i < result.list.length; i++) {
+                        html += "<tr>";
+                        html += "<td>" + result.list[i].title + "</td>";
+                        html += "<td>" + result.list[i].summary + "</td>";
+                        html += "<td>" + result.list[i].author + "</td>";
+                        html += "<td>" + result.list[i].createdate + "</td>";
+                        html += "</tr>";
+                    }
+                    $("#myTable").html(html);
+                    $("#showPage").html("第" + result.pageIndex + "页/共" + result.totalPageCount + "页")
+                    pageShow += "<span><a href='javascript:;' page='1'>首页</a></span>";
+                    if (result.hasUpPage) {
+                        pageShow += "&nbsp;&nbsp;<span><a href='javascript:;' page='" + (result.pageIndex - 1) + "'>上一页</a></span>";
+                    } else {
+                        pageShow += "&nbsp;&nbsp;<span><a href='javascript:;' page='1'>上一页</a></span>";
+                    }
+                    if (result.hasNext) {
+                        pageShow += "&nbsp;&nbsp;<span><a href='javascript:;' page='" + (result.pageIndex + 1) + "'>下一页</a></span>";
+                    } else {
+                        pageShow += "&nbsp;&nbsp;<span><a href='javascript:;' page='" + result.totalPageCount + "'>下一页</a></span>";
+                    }
+                    pageShow += "&nbsp;&nbsp;<span><a href='javascript:;' page='" + result.totalPageCount + "'>末页</a></span>";
+                    $("#pageIndex").html(pageShow);
+                }, error: function (result) {
+                    alert(result.status);
+                }
+            })
+        }
+
+        /*页面加载后，显示信息*/
+        showList(1, "");
+
+        //模糊查询
+        $("#btn").click(function () {
+            var title = $("#title").val();
+            showList(1, title);
+        })
+
+        /*点击导航条，显示信息*/
+        $("#pageIndex a").live("click", function () {
+            var page = $(this).attr("page");
+            var title = $("#title").val();
+            showList(page, title);
+        })
+    })
+</script>
+</body>
+</html>
